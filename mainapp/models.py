@@ -4,7 +4,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permis
 import phonenumbers
 # Create your models here.
 class MemberManager(BaseUserManager):
-    def create_user(self, email, firstname, secondname, phone_number,date_of_birth, password,**extra_fields):
+    def create_user(self, email, username, phone_number,date_of_birth, password,**extra_fields):
         if not email:
             raise ValueError(_('The Email field must eb set'))
 
@@ -23,8 +23,7 @@ class MemberManager(BaseUserManager):
 
         user = self.model(
             email = normalized_email,
-            firstname = firstname,
-            secondname = secondname,
+            username = username , 
             phone_number = phone_number,
             date_of_birth = date_of_birth,
             **extra_fields)
@@ -32,26 +31,27 @@ class MemberManager(BaseUserManager):
         user.save(using = self._db)
         return user
 
-    def create_superuser(self,email,firstname, secondname ,phone_number, date_of_birth, password = None, **extra_fields):
+    def create_superuser(self,email,username ,phone_number, date_of_birth, password = None, **extra_fields):
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
 
-        return self.create_user(email, firstname,secondname, phone_number, date_of_birth , password,**extra_fields)
+        return self.create_user(email,username,  phone_number, date_of_birth , password,**extra_fields)
 
 class Member (AbstractBaseUser, PermissionsMixin, UUIDGenerator, models.Model):
-    firstname = models.CharField(max_length=20)
-    secondname = models.CharField(max_length=20)
+    username = models.CharField(max_length=20, unique=True)
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20, unique=True)
     password = models.CharField(max_length=100)
     date_of_birth = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     
     objects = MemberManager()
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['firstname', 'secondname','phone_number','date_of_birth']
+    REQUIRED_FIELDS = ['username','phone_number','date_of_birth']
 
     def __str__(self):
-        return f"{self.firstname}{self.secondname}"
+        return f"{self.username}"
     
 
