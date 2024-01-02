@@ -2,6 +2,7 @@ from rest_framework import serializers
 from mainapp.models import Member
 import re
 import phonenumbers
+from django.contrib.auth import authenticate,login
 
 class RegistrationModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,3 +66,24 @@ class RegistrationModelSerializer(serializers.ModelSerializer):
             serializers.ValidationError('The date of birth cannot be empty my guy')
 
         return date_of_birth
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data:dict):
+        email = data.get('email')
+        password = data.get('password')
+        request = self.context.get('request')
+
+        user = authenticate(request=request, email = email, password = password)
+
+        if not user :
+            raise serializers.ValidationError('Invalid login credentials')
+
+        login(request=request,user=user)
+
+        #assigning user to data dictionary in oder to use give the user tokens
+        data['user'] = user
+
+        return data
