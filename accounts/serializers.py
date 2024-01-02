@@ -63,4 +63,5 @@ class RegistrationModelSerializer(serializers.ModelSerializer):
     def validate_date_of_birth(self, date_of_birth:str):
         if not date_of_birth.strip():
             serializers.ValidationError('The date of birth cannot be empty my guy')
-            
+
+        return date_of_birth
