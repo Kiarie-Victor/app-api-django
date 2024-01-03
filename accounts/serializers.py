@@ -4,7 +4,7 @@ import re
 import phonenumbers
 from django.contrib.auth import authenticate,login
 
-class RegistrationModelSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ("username", "email", "phone_number", "password", "date_of_birth")
