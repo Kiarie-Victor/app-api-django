@@ -8,4 +8,5 @@ venv/
 *.pyc
 *.pyo
 .vscode
+
 db.sqlite3
