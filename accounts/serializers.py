@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from mainapp.models import Member
+from accounts.models import PendingUserModel, Otp
 import re
 import phonenumbers
 from django.contrib.auth import authenticate,login
+from django.contrib.auth import get_user_model
 
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,8 +30,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Invalid Email format')
 
         existing_email = Member.objects.filter(email=email)
-        if not existing_email.exists():
+        if existing_email.exists():
             serializers.ValidationError('The email is already taken')
+        return email
 
     def validate_phone_number(self, phone_number:str):
         if not phone_number.strip():
@@ -62,10 +65,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return password
 
     def validate_date_of_birth(self, date_of_birth:str):
-        if not date_of_birth.strip():
+        dob = str(date_of_birth)
+        if not dob.strip():
             serializers.ValidationError('The date of birth cannot be empty my guy')
 
         return date_of_birth
+
+    def create(self, validated_data):
+        user = get_user_model().objects.create_user(**validated_data)
+        return user
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
@@ -87,3 +96,18 @@ class LoginSerializer(serializers.Serializer):
         data['user'] = user
 
         return data
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ("username", "email", "phone_number", "date_of_birth")
+
+class PendingDataSerializer( serializers.ModelSerializer):
+    class Meta:
+        model =  PendingUserModel
+        fields = ('username', 'email', 'phone_number', 'password', 'date_of_birth')
+
+class OtpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Otp
+        fields = ('otp_code',)
