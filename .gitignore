@@ -2,7 +2,9 @@
 __pycache__/
 migrations/
 tests
-.env
+git 
+
+/home/dreytted/Projects/Django/api/.env
 venv/
 
 *.pyc
@@ -11,4 +13,3 @@ venv/
 
 db.sqlite3
 test.http
-.env
