@@ -42,10 +42,13 @@ class MemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = ("username", "email", "phone_number", "date_of_birth")
 
-class PendingDataSerializer( serializers.ModelSerializer):
-    class Meta:
-        model =  PendingUserModel
-        fields = ('username', 'email', 'phone_number', 'password', 'date_of_birth')
+class PendingDataSerializer( serializers.Serializer):
+    username = serializers.CharField()
+    email = serializers.EmailField()
+    phone_number = serializers.CharField()
+    password = serializers.CharField()
+    date_of_birth = serializers.CharField()
+
 
     def validate_username(self, username:str):
         if not username.strip():

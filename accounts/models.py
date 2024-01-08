@@ -4,12 +4,12 @@ from django.utils import timezone
 
 # Create your models here.
 class Otp(models.Model):
-    username = models.CharField(max_length=20)
     otp_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
 
 class PendingUserModel(models.Model):
+    user_otp = models.CharField(max_length=6)
     username = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)

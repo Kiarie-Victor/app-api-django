@@ -36,16 +36,26 @@ class RegistrationView(APIView):
         if serializer.is_valid():
             with transaction.atomic():
                 try:
-                    # handle otp sending generation and sending
-                    otp_code = otp_generator.otp_generator()
+                    # get all the data from the request
                     email = serializer.validated_data['email']
                     username = serializer.validated_data['username']
-                    otp_instance = Otp.objects.create(otp_code=otp_code, username=username)
+                    phone_number = serializer.validated_data['phone_number']
+                    password = serializer.validated_data['password']
+                    date_of_birth = serializer.validated_data['date_of_birth']
+
+
+                    # handle otp generation and sending
+                    otp_code = otp_generator.otp_generator()
+                    
+                    otp_instance = Otp.objects.create(otp_code=otp_code)
                     otp_instance.save()
                     response = email_sender.sendEmail(
                         username=username, otp_code=otp_code, email=email)
                     if response:
-                        instance = serializer.save()
+                        # handling save PendingUserData
+                        pending_user = PendingUserModel.objects.create(user_otp=otp_code, username=username, email=email, phone_number=phone_number, password=password,date_of_birth=date_of_birth)
+                        pending_user.save()
+                        print(pending_user)
                         return Response({'Detail': 'Otp code sent successfully'}, status=status.HTTP_200_OK)
 
                     raise Exception('Error sending Email')
@@ -59,6 +69,7 @@ class RegistrationView(APIView):
 class OtpVerification(APIView):
     def post(self, request):
         serializer = OtpSerializer(data=request.data)
+ 
         if serializer.is_valid():
             otp_code = serializer.validated_data['otp_code']
             print(otp_code)
@@ -74,8 +85,7 @@ class OtpVerification(APIView):
                         return Response({'error': "Otp Expired"}, status=status.HTTP_400_BAD_REQUEST)
 
                     try:
-                        pending_user = PendingUserModel.objects.get(
-                            username=otp_instance.username)
+                        pending_user = PendingUserModel.objects.get(user_otp=otp_code)
                         print(pending_user.username)
                     except PendingUserModel.DoesNotExist:
                         return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
@@ -87,14 +97,22 @@ class OtpVerification(APIView):
                     password = pending_user.password
                     date_of_birth = pending_user.date_of_birth
 
+                    data = {
+                        "username" : username,
+                        "email" : email,
+                        "phone_number": phone_number,
+                        "password" : password,
+                        "date_of_birth": date_of_birth
+                    }
+
                     # user = get_user_model().objects.create(
                     #     username, email, phone_number, password, date_of_birth)
                     print(user)
-                    user = RegistrationSerializer(data=pending_user)
+                    user = RegistrationSerializer(data= data)
                     if user.is_valid():
-                        user.save(username=pending_user.username,
-                                  email=pending_user.email, password=pending_user.password)
+                        user.save()
                     otp_instance.delete()
+                    pending_user.delete()
 
                     token = RefreshToken.for_user(user=user)
                     print(token)
