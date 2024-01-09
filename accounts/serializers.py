@@ -52,15 +52,15 @@ class PendingDataSerializer( serializers.Serializer):
 
     def validate_username(self, username:str):
         if not username.strip():
-            raise serializers.ValidationError('Username cannot be empty')
+            raise serializers.ValidationError('Username cannot be empty.')
         if Member.objects.filter(username=username).exists():
-            raise serializers.ValidationError('This username is already taken')
+            raise serializers.ValidationError('This username is already taken.')
 
         return username
 
     def validate_email(self, email):
         if not email.strip():
-            raise serializers.ValidationError('Email cannot be empty')
+            raise serializers.ValidationError('Email cannot be empty.')
 
         reg_ex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$'
         if not re.match(reg_ex, email):

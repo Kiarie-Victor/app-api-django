@@ -6,4 +6,4 @@ def otp_expired(otp_timestamp : timezone):
     print(expire_time < timezone.now())
     if expire_time < timezone.now():
         return True
-    return false
+    return False
