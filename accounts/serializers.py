@@ -113,3 +113,10 @@ class OtpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Otp
         fields = ('otp_code',)
+
+        def validate_otp_code(self, otp:str):
+            stripped_otp = otp.strip()
+            if len(stripped_otp) == 6:
+                serializers.ValidationError('Invalid OTP code.')
+
+            return stripped_otp

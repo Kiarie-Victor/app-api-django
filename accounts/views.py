@@ -10,10 +10,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.permissions import IsAuthenticated
 from accounts.models import PendingUserModel
-from django.contrib.auth import get_user_model
-# Create your views here.
+from django.contrib.auth import get_user_model, login
 from rest_framework import serializers
 
+# Create your views here.
 
 class LoginView(APIView):
     def post(self, request):
@@ -100,13 +100,16 @@ class OtpVerification(APIView):
                         "date_of_birth": pending_user.date_of_birth
                     }
 
-                    # user = get_user_model().objects.create(
-                    #     username, email, phone_number, password, date_of_birth)
                     user = RegistrationSerializer(data= data)
                     if user.is_valid():
                         user.save()
                         otp_instance.delete()
                         pending_user.delete()
+
+                        # login the user
+                        login(request, user.instance)
+
+                        # Giving the user and access and refresh token
 
                         token = RefreshToken.for_user(user=user.instance)
                         return Response({"access": str(token.access_token),
