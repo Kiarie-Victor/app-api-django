@@ -10,7 +10,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.permissions import IsAuthenticated
 from accounts.models import PendingUserModel
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, authenticate
 from rest_framework import serializers
 
 # Create your views here.
@@ -32,6 +32,7 @@ class LoginView(APIView):
             return Response ({"errors": str(e)})
 
 class RegistrationView(APIView):
+    throttle_classes = [AnonRateThrottle]
     def post(self, request):
 
         serializer = PendingDataSerializer(data=request.data)
@@ -106,12 +107,13 @@ class OtpVerification(APIView):
                         otp_instance.delete()
                         pending_user.delete()
 
-                        # login the user
-                        login(request, user.instance)
 
                         # Giving the user and access and refresh token
 
-                        token = RefreshToken.for_user(user=user.instance)
+                        
+                        user_to_login = authenticate(request, email = pending_user.email, password = pending_user.password)
+                        login(request, user_to_login)
+                        token = RefreshToken.for_user(user=user_to_login)
                         return Response({"access": str(token.access_token),
                                         "refresh": str(token)}, status=status.HTTP_200_OK)
                     else:
@@ -121,15 +123,3 @@ class OtpVerification(APIView):
                 return Response({'error': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserList(APIView):
-    authentication_classes = [JWTAuthentication]
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        query_set = Member.objects.all()
-        serializer = MemberSerializer(query_set, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
