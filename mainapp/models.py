@@ -2,6 +2,9 @@ from django.db import models
 from mainapp.utils.uuid_abstract import UUIDGenerator
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 import phonenumbers
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 # Create your models here.
 class MemberManager(BaseUserManager):
     def create_user(self, email, username, phone_number,date_of_birth, password,**extra_fields):
@@ -53,5 +56,18 @@ class Member (AbstractBaseUser, PermissionsMixin, UUIDGenerator, models.Model):
 
     def __str__(self):
         return f"{self.username}"
+
+class ChatRoom(UUIDGenerator, models.Model):
+    participants = models.ManyToManyField(User, related_name='chat_rooms', blank=True)
+
+class Messages(UUIDGenerator, models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages", blank=True, null=True)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
     
 
