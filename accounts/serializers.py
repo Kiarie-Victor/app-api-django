@@ -3,8 +3,7 @@ from mainapp.models import Member
 from accounts.models import PendingUserModel, Otp
 import re
 import phonenumbers
-from django.contrib.auth import authenticate,login
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, login, get_user_model
 
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:

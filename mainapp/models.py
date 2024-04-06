@@ -19,7 +19,7 @@ class MemberManager(BaseUserManager):
                 ValueError('Invalid Phone Number Input')
             else:
                 phone_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-        except:
+        except phonenumbers.NumberParseException:
             raise ValueError('Invalid Number Format')
 
             date_of_birth = date_of_birth.strftime('%Y-%m-%d')

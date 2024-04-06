@@ -50,7 +50,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         if action == "one-to-one":
             # handling one-to-one chat messages
-            pass
+            await self.send
         elif action == "group":
             pass
 
